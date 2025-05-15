@@ -1,0 +1,243 @@
+import React, {useCallback, useEffect, useRef, useState} from "react";
+import {Highlight, PdfHighlighter, PdfLoader, Popup,IHighlight} from "react-pdf-highlighter";
+
+
+const parseIdFromHash = () => document.location.hash.slice("#highlight-".length);
+
+export interface CusStyle {
+    style: number,
+    color: number
+}
+
+const HighlightPopup = ({comment}: {
+    comment: {
+        text: string;
+        emoji: string
+    }
+}) =>
+    comment.text ? (
+        <div className="Highlight__popup">
+            {comment.emoji} {comment.text}
+        </div>
+    ) : null;
+
+interface PDFHProps {
+    ListHighlights: Array<IHighlight>;
+    pdfFile: string;
+    cusStyle: Array<CusStyle>;
+}
+
+
+const resetHash = () => {
+    document.location.hash = "";
+};
+export const getStyle = (style: number, color: number,index:number) => {
+    const getColor = (color: number) => {
+        switch (color) {
+            case 0:
+                return `cl-${index}-0`
+            case 1:
+                return `cl-${index}-1`
+            case 2:
+                return `cl-${index}-2`
+            case 3:
+                return `cl-${index}-3`
+            case 4:
+                return `cl-${index}-4`
+            default:
+                return  `cl-${index}-${index}`
+        }
+    }
+    const getStyle = (style: number) => {
+        switch (style) {
+            case 0:
+                return `bg-${index}`
+            case 1:
+                return `rd-${index}`
+            case 2:
+                return `da-${index}`
+            default:
+                return `blank-${index}`
+        }
+    }
+    return ` ${getStyle(style)} ${getColor(color)} `
+}
+const PDFH = ({ListHighlights, pdfFile, cusStyle}: PDFHProps) => {
+
+    const [url, setUrl] = useState<string>(pdfFile);
+    const [highlights, setHighlights] = useState<Array<IHighlight>>(
+        ListHighlights
+    );
+    const [pdfDocument, setPdfDocument] = useState<any>(null);
+    const [highlightsLoaded, setHighlightsLoaded] = useState(false);
+    const scrollViewerTo = useRef<(highlight: IHighlight) => void>(() => {
+    });
+
+    const scrollToHighlightFromHash = useCallback(() => {
+        console.log("scrollToHighlightFromHash")
+        const highlight = getHighlightById(parseIdFromHash());
+        if (highlight) {
+            scrollViewerTo.current(highlight);
+        }
+    }, []);
+
+    // useEffect(() => {
+    //     if (pdfDocument && highlightsLoaded) {
+    //         scrollToHighlightFromHash();
+    //     }
+    // }, [pdfDocument, highlightsLoaded]);
+
+    useEffect(() => {
+        window.addEventListener("hashchange", scrollToHighlightFromHash, true);
+        return () => {
+            window.removeEventListener("hashchange", scrollToHighlightFromHash, true);
+        };
+    }, [scrollToHighlightFromHash]);
+
+    const getHighlightById = (id: string) => {
+        return highlights.find((highlight) => highlight.id === id);
+    };
+
+    const onPdfDocumentLoaded = (pdfDocument: any) => {
+        setPdfDocument(pdfDocument);
+        setHighlights(ListHighlights);
+    };
+
+    const handlePdfHighlighterScroll = (scrollTo: (highlight: IHighlight) => void) => {
+        scrollViewerTo.current = scrollTo;
+    };
+
+    return (
+        <div style={{display: "flex", height: "100vh"}}>
+            <div
+                style={{
+                    height: "100vh",
+                    width: "50vw",
+                    position: "relative",
+                }} className={` cus-style ${cusStyle.map((item,index)=>{
+                    return  getStyle(item.style, item.color,index)
+            })} `}
+            >
+                <PdfLoader url={url}  beforeLoad={<div className={"is-calc2 is-center"}>
+                    <div className={"rotate-animate"}>
+                        <svg width="100" height="100" viewBox="0 0 313 313" fill="none"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <g clip-path="url(#clip0_261_7874)">
+                                <path
+                                    d="M125.05 0.203647C135.65 24.7402 145.628 49.553 156.021 74.1784C156.189 74.1589 156.515 74.1096 156.673 74.0897C167.076 49.5135 176.778 24.6218 187.417 0.154297C187.457 27.1583 187.378 54.1722 187.457 81.1762C205.795 63.223 223.6 44.7466 241.81 26.6648C242.788 25.7075 243.814 24.7896 244.87 23.921C234.645 48.9118 224.37 73.9021 213.978 98.8335C238.958 88.49 263.85 77.9192 288.89 67.7633C279.533 77.485 269.802 86.8516 260.356 96.4846C251.167 106.335 241.139 115.385 232.039 125.304C242.018 125.304 252.006 125.502 261.975 125.088C278.921 125.097 295.858 125.048 312.805 125.117C288.061 135.875 262.972 145.873 238.129 156.424C259.162 165.159 280.244 173.785 301.287 182.491C305.077 184.109 309.015 185.422 312.617 187.465C285.741 187.623 258.856 187.386 231.97 187.584C238.316 194.335 244.979 200.8 251.67 207.195C264.215 219.848 276.947 232.304 289.384 245.056C264.344 234.87 239.422 224.388 214.372 214.242C224.528 239.193 235.188 263.937 245.275 288.918C225.851 270.195 207.236 250.633 187.704 232.018C188.187 254.176 187.793 276.363 187.921 298.531C187.872 303.259 188.059 307.996 187.763 312.724C177.242 287.951 167.095 263.009 156.623 238.206C146.191 262.99 136.37 288.039 125.661 312.704C125.267 285.779 125.612 258.834 125.494 231.909C106.445 250.939 87.6623 270.273 68.2977 288.987C78.2168 264.036 88.7185 239.312 98.8646 214.459C73.8051 224.536 49.0413 235.354 23.972 245.392C42.7841 225.978 62.4152 207.353 81.0596 187.781C54.1146 188.087 27.1501 188.117 0.195374 187.89C24.9688 177.408 49.8408 167.153 74.6933 156.839C54.0157 147.769 32.9437 139.566 12.1281 130.812C8.32818 129.154 4.33084 127.91 0.748086 125.788C27.5152 125.295 54.3022 125.739 81.0791 125.571C62.2475 106.265 42.636 87.7398 23.8733 68.365C24.9688 68.7007 26.0545 69.0758 27.1204 69.4803C50.976 79.2814 74.7824 89.1809 98.6575 98.9222C88.3531 73.9416 77.8616 49.0497 67.5771 24.0789C80.1811 36.1301 92.242 48.7637 104.728 60.9429C111.725 67.5261 118.309 74.5438 125.227 81.2058C125.405 54.2019 124.734 27.2077 125.05 0.203647Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M152.893 13.0454C158.706 10.4397 165.763 15.9767 164.401 22.2441C163.671 28.5905 154.956 31.4626 150.455 27.0606C145.964 23.2015 147.297 15.118 152.893 13.0454Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M101.194 23.4384C105.921 21.5336 111.991 24.9782 112.386 30.1599C113.136 34.394 110.126 38.7269 105.921 39.5462C101.519 40.6615 96.6037 37.4735 95.8835 32.9826C94.9457 29.0742 97.4427 24.7807 101.194 23.4384Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M204.087 23.7162C209.733 20.1828 217.757 25.5916 216.494 32.155C216.049 38.4126 207.67 41.8177 202.992 37.6427C198.284 34.3067 198.905 26.2627 204.087 23.7162Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M57.143 52.5072C63.1142 48.786 71.4543 54.8956 69.4508 61.7058C68.4341 67.9435 59.7091 70.3517 55.4452 65.8412C51.4184 62.2782 52.3265 54.9448 57.143 52.5072Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M249.647 52.4756C255.351 50.2846 261.875 55.8018 260.632 61.7929C260 68.0897 251.473 71.1099 246.863 66.8658C241.919 63.0066 243.646 54.252 249.647 52.4756Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M28.481 95.8227C34.6102 93.2171 41.7361 99.7115 39.5154 106.038C38.1633 112.098 29.5864 114.131 25.4706 109.621C21.1378 105.643 22.9933 97.7178 28.481 95.8227Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M279.79 96.4174C285.968 94.5519 292.186 101.254 289.817 107.254C288.1 113.275 279.414 114.943 275.506 110.117C271.479 105.705 273.828 97.6018 279.79 96.4174Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M18.2867 147.651C23.7349 145.686 29.9628 150.769 29.035 156.504C28.8969 162.988 20.1225 166.502 15.4047 162.179C10.3217 158.339 12.0292 149.19 18.2867 147.651Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M289.727 148.588C295.985 146.298 302.687 153.167 300.16 159.356C298.364 165.603 288.997 166.995 285.444 161.586C282.068 157.224 284.319 149.999 289.727 148.588Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M27.277 200.14C32.8831 197.238 40.098 202.489 39.1309 208.698C38.8544 214.866 30.9289 218.35 26.0432 214.738C20.6444 211.471 21.4735 202.489 27.277 200.14Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M277.302 201.561C282.523 197.939 290.665 202.203 290.201 208.687C290.596 215.073 282.681 219.248 277.459 215.833C272.238 212.961 272.199 204.591 277.302 201.561Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M56.0281 244.671C61.743 241.296 69.6485 246.685 68.3657 253.258C67.7537 259.397 59.7888 262.624 55.0016 258.824C50.1558 255.489 50.7282 247.277 56.0281 244.671Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M249.42 244.853C255.361 242.296 262.329 248.564 260.454 254.733C259.28 260.852 250.762 263.231 246.478 258.829C241.968 254.93 243.685 246.57 249.42 244.853Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M99.575 274.601C104.52 271.334 112.001 274.828 112.386 280.819C113.344 286.889 106.543 292.08 100.947 289.583C94.6299 287.53 93.7914 277.789 99.575 274.601Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M205.805 274.026C211.628 272.072 217.945 278.033 216.297 283.955C215.29 290.183 206.565 292.69 202.291 288.15C197.623 284.113 199.705 275.368 205.805 274.026Z"
+                                    fill="#F76F1A"/>
+                                <path
+                                    d="M153.691 284.219C159.978 282.116 166.502 289.015 163.926 295.154C162.09 301.175 153.237 302.616 149.496 297.632C145.696 293.269 148.065 285.62 153.691 284.219Z"
+                                    fill="#F76F1A"/>
+                            </g>
+                            <defs>
+                                <clipPath id="clip0_261_7874">
+                                    <rect width="313" height="313" fill="white"/>
+                                </clipPath>
+                            </defs>
+                        </svg>
+                    </div>  </div>
+                    }>
+                    {(loadedPdfDocument) => {
+                        onPdfDocumentLoaded(loadedPdfDocument);
+                        return (
+                            pdfDocument && (
+                                <PdfHighlighter
+                                    pdfDocument={pdfDocument}
+                                    enableAreaSelection={(event) => event.altKey}
+                                    onScrollChange={resetHash}
+                                    onSelectionFinished={(
+                                        position,
+                                        content,
+                                        hideTipAndSelection,
+                                        transformSelection,
+                                    ) => null}
+                                    scrollRef={handlePdfHighlighterScroll}
+                                    highlightTransform={(
+                                        highlight,
+                                        index,
+                                        setTip,
+                                        hideTip,
+                                        viewportToScaled,
+                                        screenshot,
+                                        isScrolledTo
+                                    ) => {
+                                        const component = () => {
+                                            return <div id={highlight.id}
+                                                        className={`${highlight.content.text}`}>
+                                                <Highlight
+                                                    isScrolledTo={isScrolledTo}
+                                                    position={highlight.position}
+                                                    comment={highlight.comment}
+                                                />
+                                            </div>
+                                        };
+                                        return (
+                                            <Popup
+                                                popupContent={<HighlightPopup {...highlight} />}
+                                                onMouseOver={(popupContent) => setTip(highlight, () => popupContent)}
+                                                onMouseOut={hideTip}
+                                                key={index}
+                                            >
+                                                {component()}
+                                            </Popup>
+                                        );
+                                    }}
+                                    highlights={highlights}
+
+                                />
+                            )
+                        );
+                    }}
+                </PdfLoader>
+            </div>
+        </div>
+    );
+};
+
+export default PDFH;

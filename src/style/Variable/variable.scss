@@ -1,0 +1,118 @@
+//COLOR
+//primary
+@function create-monochrome-colors($baseColor) {
+  $light: lighten($baseColor, 42%);
+  $hover: darken($baseColor, 10%);
+  $active: darken($baseColor, 40%);
+  $dark: darken($baseColor, 70%);
+
+  @return (
+          light : $light,
+          main: $baseColor,
+          hover: $hover,
+          active:$active,
+          dark: $dark
+  );
+}
+$white: #FFFFFF !default;
+$gray-5: #fafafa !default;
+$gray-10: #e6e6e6 !default;
+$gray-20: #BDBDBD !default;
+$gray-30: #B0B0B0 !default;
+$gray-40: #989898 !default;
+$gray-50: #7C7C7C !default;
+$gray-60: #656565 !default;
+$gray-70: #525252 !default;
+$gray-80: #464646 !default;
+$gray-90: #2b2b2b !default;
+$gray-95: #121212 !default;
+$black: #0a0a0a !default;
+
+$shader-5: rgba(10, 10, 10, 0.05);
+$shader-10: rgba(10, 10, 10, 0.1);
+$shader-20: rgba(10, 10, 10, 0.2);
+$shader-30: rgba(10, 10, 10, 0.3);
+$shader-40: rgba(10, 10, 10, 0.4);
+$shader-50: rgba(10, 10, 10, 0.5);
+$shader-60: rgba(10, 10, 10, 0.6);
+$shader-70: rgba(10, 10, 10, 0.7);
+$shader-80: rgba(10, 10, 10, 0.8);
+$shader-90: rgba(10, 10, 10, 0.9);
+$shader-95: rgba(10, 10, 10, 0.95);
+
+$primary: #F66F1A;
+$primary-themes: create-monochrome-colors($primary);
+
+$primary-light: map-get($primary-themes, light);
+$primary-hover: map-get($primary-themes, hover);
+$primary-active: map-get($primary-themes, active);
+$primary-dark: map-get($primary-themes, dark);
+
+$secondary: #20409A;
+$secondary-themes: create-monochrome-colors($secondary);
+
+$secondary-light: map-get($secondary-themes, light);
+$secondary-hover: map-get($secondary-themes, hover);
+$secondary-active: map-get($secondary-themes, active);
+$secondary-dark: map-get($secondary-themes, dark);
+//shades
+//shades
+$shades: (
+        white: $white,
+        light: $gray-5,
+        sliver: $gray-10,
+        disable: $gray-30,
+        darkgray: $gray-80,
+        mute: $gray-90,
+        outline: $gray-95,
+        black: $black
+) !default;
+$colors: (
+        primary:(
+                light:$primary-light,
+                main:$primary,
+                hover:$primary-hover,
+                active:$primary-active,
+                dark:$primary-dark,
+        ),
+        secondary:(
+                light:$secondary-light,
+                main:$secondary,
+                hover:$secondary-hover,
+                active:$secondary-active,
+                dark:$secondary-dark,
+        ),
+        shade:(
+                light:map-get($shades, light),
+                main:map-get($shades, outline),
+                hover:map-get($shades, outline),
+                active:map-get($shades, outline),
+                dark:map-get($shades, black)
+        ),
+);
+
+$sizes: (
+        x:0,
+        xs: 4px,
+        s: 8px,
+        m: 16px,
+        l: 24px,
+        xl: 32px,
+        xxl: 48px
+) ;
+
+
+
+$container-xxl: 1440px;
+$container-xl: 1280px;
+$container-l: 1080px;
+$container-m: 920px;
+$container-s: 720px;
+$container-xs: 420px;
+
+$breakpoint-xxl: 1600px;
+$breakpoint-xl: 1400px;
+$breakpoint-l: 1200px;
+$breakpoint-m: 1000px;
+$breakpoint-s: 980px;
+$breakpoint-xs: 500px;

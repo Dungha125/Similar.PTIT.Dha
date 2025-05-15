@@ -1,0 +1,111 @@
+.modal-slide {
+  display: none;
+
+  &.is-open {
+    display: flex;
+
+    .modal-dialog {
+      border-radius: 16px 0 0 16px;
+      opacity: 1;
+      max-width: 740px;
+
+      &.modal-s {
+        max-width: 480px;
+      }
+      &.modal-preview {
+        max-width: 1280px;
+        top: 1px!important;
+      }
+    }
+
+    &:before {
+      opacity: 1;
+    }
+  }
+
+  position: relative;
+  z-index: 998;
+
+  .modal-dialog {
+    max-height: 100vh;
+    height: 100%;
+    background-color: map-get($shades, white);
+    width: 100%;
+    opacity: 0;
+    transition: opacity 0.25s, transform .45s;
+    position: fixed;
+    top: 0%;
+    right:0;
+    z-index: 999;
+
+    &.open {
+      opacity: 1;
+      transform: translate(0%, 0vh);
+    }
+
+    &.close {
+      opacity: 0;
+      transform: translate(100%,0 );
+    }
+
+    .modal-header {
+      padding: map-get($sizes, l);
+      display: flex;
+      flex-direction: column;
+      gap: map-get($sizes, l);
+      align-items: start;
+    }
+
+    .modal-body {
+      border-top: 1px solid map-get($shades, sliver);
+      border-bottom: 1px solid map-get($shades, sliver);
+      background-color: map-get($shades, light);
+
+    }
+
+    .modal-bottom {
+      background-color: map-get($shades, light);
+      justify-content: end;
+      gap: map-get($sizes, s);
+      padding: map-get($sizes, m) map-get($sizes, l);
+      display: flex;
+      align-items: center;
+    }
+  }
+
+
+  &:before {
+    content: "";
+    background: rgba(0, 0, 0, 0.6);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 1.45s;
+  }
+
+  @media screen and (max-width: $breakpoint-s) {
+
+    .modal-dialog {
+      background: map-get($shades,white) !important;
+      max-width: 100vw;
+      width: 100%;
+      top: 0;
+      &.open {
+        opacity: 1;
+        transform: translate( calc(100vh - 100%),-50%)!important;
+      }
+
+      &.close {
+        opacity: 0;
+        transform: translate(100%,-50%)!important;
+      }
+    }
+
+  }
+}
